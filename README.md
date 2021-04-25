@@ -1,4 +1,4 @@
-# Z80oolong Stumpwm
+# z80oolong/stumpwm
 
 ## How do I install these formulae?
 
