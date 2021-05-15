@@ -7,7 +7,28 @@ class StumpwmContrib < Formula
   license any_of: ["ISC", "GPLv3", "BSD-2-Clause"]
   head "https://github.com/stumpwm/stumpwm-contrib.git"
 
+  depends_on "z80oolong/stumpwm/stumpwm"
+  depends_on "libfixposix"
+  depends_on "sbcl" => :build
+
+  resource("clx-truetype") do
+    url "https://github.com/LispLima/clx-truetype.git"
+  end
+
   def install
+    resource("clx-truetype").stage do
+      (Formula["z80oolong/stumpwm/stumpwm"].libexec/"quicklisp/local-projects").install "#{Pathname.pwd}" => "clx-truetype"
+    end
+
+    system "#{Formula["sbcl"].bin}/sbcl", "--load", "#{Formula["z80oolong/stumpwm/stumpwm"].libexec}/quicklisp/setup.lisp", \
+      "--eval", %[(progn (ql:quickload "clx-truetype") (quit))]
+
+    system "#{Formula["sbcl"].bin}/sbcl", "--load", "#{Formula["z80oolong/stumpwm/stumpwm"].libexec}/quicklisp/setup.lisp", \
+      "--eval", %[(progn (ql:quickload "babel") (ql:quickload "dbus") (ql:quickload "cffi") (ql:quickload "usocket-server"))], \
+      "--eval", %[(progn (ql:quickload "percent-encoding") (ql:quickload "xkeyboard") (ql:quickload "cl-fad") (ql:quickload "drakma"))], \
+      "--eval", %[(progn (ql:quickload "zpng") (ql:quickload "uiop") (ql:quickload "quri") (ql:quickload "py-configparser"))], \
+      "--eval", %[(progn (ql:quickload "clim") (ql:quickload "clim-lisp") (ql:quickload "mcclim") (ql:quickload "slim") (quit))]
+
     %w(media minor-mode modeline util).each do |d|
       (share/"stumpwm-contrib").install "#{buildpath}/#{d}"
     end
@@ -18,8 +39,8 @@ class StumpwmContrib < Formula
     (share/"stumpwm-contrib").glob("*/*") do |d|
       lispcode << %[\n  (add-to-load-path "#{d}")]
     end
-
     lispcode << ")\n"
+
     (share/"stumpwm-contrib/setup.lisp").write(lispcode)
   end
 end
