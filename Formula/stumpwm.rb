@@ -15,6 +15,10 @@ class Stumpwm < Formula
     sha256 "4a7a5c2aebe0716417047854267397e24a44d0cce096127411e9ce9ccfeb2c17"
   end
 
+  resource("stumpwm-contrib") do
+    url "https://github.com/stumpwm/stumpwm-contrib.git"
+  end
+
   resource("clx-truetype") do
     url "https://github.com/LispLima/clx-truetype.git"
   end
@@ -57,21 +61,23 @@ class Stumpwm < Formula
       "--eval", %[(progn (ql:quickload "zpng") (ql:quickload "uiop") (ql:quickload "quri") (ql:quickload "py-configparser"))], \
       "--eval", %[(progn (ql:quickload "clim") (ql:quickload "clim-lisp") (ql:quickload "mcclim") (ql:quickload "slim") (quit))]
 
-    %w(media minor-mode modeline util).each do |d|
-      (share/"stumpwm-contrib").install "#{buildpath}/#{d}"
-    end
+    resource("stumpwm-contrib").stage do
+      %w(media minor-mode modeline util).each do |d|
+        (share/"stumpwm-contrib").install "#{Pathname.pwd}/#{d}"
+      end
 
-    lispcode =  ";; Add loadpath of stumpwm-contrib library.\n\n"
-    lispcode << "(progn "
-    lispcode << %[\n  (when (probe-file "#{libexec}/quicklisp/setup.lisp")]
-    lispcode << %[\n    (load "#{libexec}/quicklisp/setup.lisp"))]
-    (share/"stumpwm-contrib").glob("*/*") do |d|
-      lispcode << %[\n  (add-to-load-path "#{d}")]
-    end
-    lispcode << ")\n"
+      lispcode =  ";; Add loadpath of stumpwm-contrib library.\n\n"
+      lispcode << "(progn "
+      lispcode << %[\n  (when (probe-file "#{libexec}/quicklisp/setup.lisp")]
+      lispcode << %[\n    (load "#{libexec}/quicklisp/setup.lisp"))]
+      (share/"stumpwm-contrib").glob("*/*") do |d|
+        lispcode << %[\n  (add-to-load-path "#{d}")]
+      end
+      lispcode << ")\n"
 
-    (share/"stumpwm-contrib/setup.lisp").write(lispcode)
-    (bin/"stumpish").symlink "#{share}/stumpwm-contrib/util/stumpish/stumpish"
+      (share/"stumpwm-contrib/setup.lisp").write(lispcode)
+      bin.install_symlink "#{share}/stumpwm-contrib/util/stumpish/stumpish"
+    end
   end
 
   test do
