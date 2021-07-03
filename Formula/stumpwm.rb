@@ -8,6 +8,7 @@ class Stumpwm < Formula
   license "GPL-2.0"
 
   depends_on "sbcl" => :build
+  depends_on "rlwrap"
   depends_on "libfixposix"
 
   resource("quicklisp") do
